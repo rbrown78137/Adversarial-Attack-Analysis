@@ -56,25 +56,6 @@ model.load_state_dict(torch.load(pretrained_model, map_location='cpu'))
 # Set the model in evaluation mode. In this case this is for the Dropout layers
 model.eval()
 
-
-######################################################################
-# FGSM Attack
-# ~~~~~~~~~~~
-#
-# Now, we can define the function that creates the adversarial examples by
-# perturbing the original inputs. The ``fgsm_attack`` function takes three
-# inputs, *image* is the original clean image (:math:`x`), *epsilon* is
-# the pixel-wise perturbation amount (:math:`\epsilon`), and *data_grad*
-# is gradient of the loss w.r.t the input image
-# (:math:`\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y)`). The function
-# then creates perturbed image as
-#
-# .. math:: perturbed\_image = image + epsilon*sign(data\_grad) = x + \epsilon * sign(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y))
-#
-# Finally, in order to maintain the original range of the data, the
-# perturbed image is clipped to range :math:`[0,1]`.
-#
-
 # FGSM attack code
 def fgsm_attack(image, epsilon, data_grad):
     # Collect the element-wise sign of the data gradient
@@ -87,26 +68,7 @@ def fgsm_attack(image, epsilon, data_grad):
     return perturbed_image
 
 
-######################################################################
-# Testing Function
-# ~~~~~~~~~~~~~~~~
-#
-# Finally, the central result of this tutorial comes from the ``test``
-# function. Each call to this test function performs a full test step on
-# the MNIST test set and reports a final accuracy. However, notice that
-# this function also takes an *epsilon* input. This is because the
-# ``test`` function reports the accuracy of a model that is under attack
-# from an adversary with strength :math:`\epsilon`. More specifically, for
-# each sample in the test set, the function computes the gradient of the
-# loss w.r.t the input data (:math:`data\_grad`), creates a perturbed
-# image with ``fgsm_attack`` (:math:`perturbed\_data`), then checks to see
-# if the perturbed example is adversarial. In addition to testing the
-# accuracy of the model, the function also saves and returns some
-# successful adversarial examples to be visualized later.
-#
-
 def test( model, device, test_loader, epsilon ):
-
     # Accuracy counter
     correct = 0
     adv_examples = []
