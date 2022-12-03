@@ -1,5 +1,5 @@
 import torchvision.datasets
-from torchvision.models import densenet201
+from torchvision.models import vgg16
 import time
 import torch
 from torchvision import transforms
@@ -39,7 +39,7 @@ normalize_input = transforms.Compose([
 image_net_validation_set = torchvision.datasets.ImageNet(root=constants.path_to_image_net, split="val")
 
 # Load Model
-model = densenet201(pretrained=True)
+model = vgg16(pretrained=True)
 model.eval()
 model.to(device)
 
@@ -48,15 +48,15 @@ attack_method1 = torchattacks.PGD(model, eps=8/255, alpha=2/255, steps=10)
 attack_method2 = torchattacks.FGSM(model, eps=1/255)
 attack_method3 = torchattacks.CW(model)
 attack_method4 = torchattacks.Pixle(model)
-attack_method5 = torchattacks.TIFGSM(model)
-
+attack_method5 = torchattacks.OnePixel(model)
+attack_method6 = torchattacks.Square(model)
 # Account For Normalization in Model
 attack_method1.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 attack_method2.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 attack_method3.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 attack_method4.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 attack_method5.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-
+attack_method6.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 # Loop Through Images and Generate Attacks
 counter = 0
 successes_attack_method1 = 0
@@ -64,6 +64,7 @@ successes_attack_method2 = 0
 successes_attack_method3 = 0
 successes_attack_method4 = 0
 successes_attack_method5 = 0
+successes_attack_method6 = 0
 successful_predictions = 0
 for image_pil, label_input in image_net_validation_set:
     print(f"Loading image{counter}")
@@ -112,13 +113,22 @@ for image_pil, label_input in image_net_validation_set:
         wrong_label5 = model(attack_image5).argmax().unsqueeze(0)
         if not predictions == wrong_label5:
             successes_attack_method5 += 1
-        print(f"Success rate of attack for PGD:    {successes_attack_method1 / successful_predictions}")
-        print(f"Success rate of attack for FGSM:   {successes_attack_method2 / successful_predictions}")
-        print(f"Success rate of attack for CW:     {successes_attack_method3 / successful_predictions}")
-        print(f"Success rate of attack for Pixle:  {successes_attack_method4 / successful_predictions}")
-        print(f"Success rate of attack for TIFGSM: {successes_attack_method5 / successful_predictions}")
-print(f"Success rate of attack for PGD:    {successes_attack_method1/successful_predictions}")
-print(f"Success rate of attack for FGSM:   {successes_attack_method2/successful_predictions}")
-print(f"Success rate of attack for CW:     {successes_attack_method3/successful_predictions}")
-print(f"Success rate of attack for Pixle:  {successes_attack_method4/successful_predictions}")
-print(f"Success rate of attack for TIFGSM: {successes_attack_method5/successful_predictions}")
+
+        attack_image6 = attack_method6(image, label)
+        wrong_label6 = model(attack_image6).argmax().unsqueeze(0)
+        if not predictions == wrong_label6:
+            successes_attack_method6 += 1
+
+        print(f"Success rate of attack for PGD:         {successes_attack_method1 / successful_predictions}")
+        print(f"Success rate of attack for FGSM:        {successes_attack_method2 / successful_predictions}")
+        print(f"Success rate of attack for CW:          {successes_attack_method3 / successful_predictions}")
+        print(f"Success rate of attack for Pixle:       {successes_attack_method4 / successful_predictions}")
+        print(f"Success rate of attack for One Pixel:   {successes_attack_method5 / successful_predictions}")
+        print(f"Success rate of attack for Square:      {successes_attack_method6 / successful_predictions}")
+
+print(f"Success rate of attack for PGD:         {successes_attack_method1 / successful_predictions}")
+print(f"Success rate of attack for FGSM:        {successes_attack_method2 / successful_predictions}")
+print(f"Success rate of attack for CW:          {successes_attack_method3 / successful_predictions}")
+print(f"Success rate of attack for Pixle:       {successes_attack_method4 / successful_predictions}")
+print(f"Success rate of attack for One Pixel:   {successes_attack_method5 / successful_predictions}")
+print(f"Success rate of attack for Square:      {successes_attack_method6 / successful_predictions}")

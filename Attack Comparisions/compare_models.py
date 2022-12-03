@@ -60,11 +60,11 @@ model5 = densenet201(pretrained=True)
 model5.eval()
 model5.to(device)
 # Sample Attack Method
-attack_method1 = torchattacks.PGD(model1, eps=8/255, alpha=2/255, steps=4)
-attack_method2 = torchattacks.PGD(model1, eps=8/255, alpha=2/255, steps=4)
-attack_method3 = torchattacks.PGD(model1, eps=8/255, alpha=2/255, steps=4)
-attack_method4 = torchattacks.PGD(model1, eps=8/255, alpha=2/255, steps=4)
-attack_method5 = torchattacks.PGD(model1, eps=8/255, alpha=2/255, steps=4)
+attack_method1 = torchattacks.FGSM(model1, eps=2/255)
+attack_method2 = torchattacks.FGSM(model2, eps=2/255)
+attack_method3 = torchattacks.FGSM(model3, eps=2/255)
+attack_method4 = torchattacks.FGSM(model4, eps=2/255)
+attack_method5 = torchattacks.FGSM(model5, eps=2/255)
 
 # Account For Normalization in Model
 attack_method1.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
